@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <title>歌词轮盘</title>
+    <!-- /.sim/ 是宿主提供给扩展页面的 SimUI、字体与播放控制，页面其余文件来自扩展目录 -->
+    <link rel="stylesheet" href="/.sim/fonts.css">
+    <link rel="stylesheet" href="/.sim/simui.css">
+    <link rel="stylesheet" href="wheel.css">
+    <link rel="stylesheet" href="/.sim/runtime.css" id="runtimeCss">
+    <script src="/.sim/cssRules.js" defer></script>
+    <script src="/.sim/simui.js" defer></script>
+    <script src="/.sim/player.js" defer></script>
+    <script src="wheel.js" defer></script>
+</head>
+<body>
+    <!-- 背景：放大、模糊的封面，上面压一层随封面取色的暗色 -->
+    <img id="backdropCover" src="/.sim/assets/placeholder.png">
+    <div id="backdrop"></div>
+    <header id="topBar">
+        <button id="collapseButton" class="barButton windowsIcon" title="收起播放页">&#xEAB4;</button>
+        <div id="topSpace"></div>
+        <button id="minimizeButton" class="barButton windowsIcon" title="最小化">&#xEABA;</button>
+        <button id="maximizeButton" class="barButton windowsIcon" title="最大化 / 还原">&#xEAB9;</button>
+        <button id="closeButton" class="barButton windowsIcon closeButton" title="关闭">&#xEAB8;</button>
+    </header>
+    <main id="stage">
+        <!-- 唱片的圆心：频谱、唱片和歌词都以它为中心 -->
+        <div id="hub">
+            <canvas id="spectrum"></canvas>
+            <button id="disc" title="播放 / 暂停"><span id="discSpin"><img id="discCover" src="/.sim/assets/placeholder.png"></span><span id="discShine"></span><i id="discIcon">&#xF508;</i></button>
+            <div id="trackInfo"><div id="trackTitle"></div><div id="trackArtist"></div></div>
+            <div id="wheel"></div>
+            <aside id="queueDrawer"><div id="queueList"></div></aside>
+        </div>
+    </main>
+    <footer id="controlBar">
+        <div class="seekRow"><span id="positionLabel">0:00</span><div id="seekBar" class="progress" min="0" max="1" value="0"></div><span id="durationLabel">0:00</span></div>
+        <div class="buttonRow">
+            <div class="side"><button id="modeButton" class="roundButton" title="播放模式"><i>&#xF072;</i></button><button id="lyricsButton" class="roundButton" title="歌词"><i>&#xF201;</i></button><button id="queueButton" class="roundButton" title="播放队列"><i>&#xF011;</i></button></div>
+            <div class="transport">
+                <button id="previousButton" class="roundButton" title="上一首"><i>&#xF140;</i></button>
+                <button id="toggleButton" class="roundButton play" title="播放 / 暂停"><i>&#xF508;</i></button>
+                <button id="nextButton" class="roundButton" title="下一首"><i>&#xF144;</i></button>
+            </div>
+            <div class="side end"><button id="moreButton" class="roundButton" title="更多操作"><i>&#xEF77;</i></button><button id="muteButton" class="roundButton" title="静音"><i>&#xF2A2;</i></button><div id="volumeBar" class="progress" min="0" max="1" value="0.8"></div><button id="fullscreenButton" class="roundButton" title="全屏"><svg viewBox="0 0 24 24"><path class="enter" d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/><path class="leave" d="M9 4v5H4M20 9h-5V4M15 20v-5h5M4 15h5v5"/></svg></button></div>
+        </div>
+    </footer>
+</body>
+</html>

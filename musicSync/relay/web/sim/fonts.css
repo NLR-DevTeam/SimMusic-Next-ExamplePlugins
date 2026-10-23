@@ -1,0 +1,3 @@
+/* SimUI 的图标字体；界面字体用系统的。 */
+@font-face { font-family: "icon"; src: url("fonts/remixicon.ttf"); }
+html:root { font-family: "PingFang SC", "HarmonyOS Sans SC", "Microsoft YaHei UI", "Microsoft YaHei", system-ui, sans-serif; }

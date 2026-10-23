@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>一起听</title>
+    <!-- SimMusic 内置播放页的网页版：sim/ 是随中继附带的 SimUI，share.js 代替宿主提供 simPlayer。 -->
+    <link rel="stylesheet" href="assets/sim/fonts.css">
+    <link rel="stylesheet" href="assets/sim/simui.css">
+    <link rel="stylesheet" href="assets/player.css">
+    <link rel="stylesheet" href="assets/sim/runtime.css" id="runtimeCss">
+    <script src="assets/sim/cssRules.js" defer></script>
+    <script src="assets/sim/simui.js" defer></script>
+    <script src="assets/share.js" defer></script>
+    <script src="assets/player.js" defer></script>
+</head>
+<body class="hideList">
+    <section id="playPage">
+        <div id="coverAtmosphere" class="coverAtmosphere"><div></div><div></div><div></div></div>
+        <div id="membersLabel"><i>&#xEE05;</i><span id="membersText">一起听</span></div>
+        <div class="playerContainer">
+            <div class="controls">
+                <img id="largeCover" src="assets/sim/placeholder.png">
+                <div class="infoBar"><div class="musicInfo"><b id="largeTitle">未在播放</b><div id="largeArtist">未知艺术家</div></div></div>
+                <div class="progressControl"><span id="positionLabel">0:00</span><div id="largeSeekBar" class="progress" min="0" max="1" value="0"></div><span id="durationLabel">0:00</span></div>
+                <div class="buttons">
+                    <button id="largeQueueButton" class="iconButton listBtn" title="播放队列"><i>&#xF011;</i></button>
+                    <button id="largeModeButton" class="iconButton" title="播放模式"><i>&#xF072;</i></button>
+                    <button id="largePreviousButton" class="iconButton larger" title="上一首"><i>&#xF140;</i></button>
+                    <button id="largeToggleButton" class="iconButton play" title="播放 / 暂停"><svg class="playGlyph" viewBox="0 0 24 24"><path/><path/></svg></button>
+                    <button id="largeNextButton" class="iconButton larger" title="下一首"><i>&#xF144;</i></button>
+                    <div class="largeVolumeControl"><button id="largeVolumeButton" class="iconButton" title="音量"><i>&#xF2A2;</i></button><div id="largeVolumeBar" class="progress" min="0" max="1" value="1" hidden></div></div>
+                    <button id="lyricsButton" class="iconButton lyricsBtn" title="歌词"><i>&#xF201;</i></button>
+                </div>
+            </div>
+            <div id="lyricsPanel" class="lyrics"><div id="lyricsView" class="lyricsScroll"><div class="emptyLyrics">暂无歌词</div></div></div>
+            <aside id="queuePanel" class="list" hidden><div id="queueTracks"></div></aside>
+        </div>
+    </section>
+    <section id="gate">
+        <div class="gateCard">
+            <div class="gateIcon"><i>&#xEE05;</i></div>
+            <h1>一起听</h1>
+            <p id="gateText">正在连接…</p>
+            <div id="passwordBox" class="input" hidden><input id="passwordInput" type="password" placeholder="输入分享密码"></div>
+            <button id="joinButton" hidden>加入一起听</button>
+        </div>
+    </section>
+    <div id="resumeLayer" hidden><button id="resumeButton">点击开始收听</button></div>
+</body>
+</html>

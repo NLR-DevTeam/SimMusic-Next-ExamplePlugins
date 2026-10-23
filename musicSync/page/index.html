@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <title>一起听</title>
+    <!-- /.sim/ 是宿主提供给扩展页面的 SimUI 与字体，页面其余文件来自扩展目录 -->
+    <link rel="stylesheet" href="/.sim/fonts.css">
+    <link rel="stylesheet" href="/.sim/simui.css">
+    <link rel="stylesheet" href="page.css">
+    <link rel="stylesheet" href="/.sim/runtime.css" id="runtimeCss">
+    <script src="/.sim/cssRules.js" defer></script>
+    <script src="/.sim/simui.js" defer></script>
+    <script src="page.js" defer></script>
+</head>
+<body>
+    <div id="dragArea"></div>
+    <main id="home">
+        <div class="logo"><i>&#xEE05;</i></div>
+        <h1>一起听</h1>
+        <div id="idleView" class="actions" hidden>
+            <button id="shareButton">共享音频</button>
+            <button id="joinButton" class="sub">加入分享</button>
+        </div>
+        <div id="sessionView" hidden>
+            <p id="sessionStatus"></p>
+            <p id="nowTitle"></p>
+            <div class="actions">
+                <button id="copyButton">复制链接</button>
+                <button id="leaveButton" class="sub">结束分享</button>
+            </div>
+        </div>
+    </main>
+    <div id="popupLayer">
+        <div id="sharePopup" class="popup">
+            <h2>共享音频</h2>
+            <div class="input"><input id="passwordInput" type="password" placeholder="设置分享密码，可留空"></div>
+            <div class="popupButtons"><button class="sub" data-close>取消</button><button id="createButton">创建</button></div>
+        </div>
+        <div id="joinPopup" class="popup">
+            <h2>加入分享</h2>
+            <div class="input"><input id="linkInput" placeholder="分享链接"></div>
+            <div class="popupButtons"><button class="sub" data-close>取消</button><button id="confirmJoinButton">加入</button></div>
+        </div>
+    </div>
+</body>
+</html>

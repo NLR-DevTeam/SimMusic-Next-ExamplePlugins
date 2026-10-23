@@ -1,0 +1,9 @@
+{
+  "id": "taskbarLyrics",
+  "name": "Windows 任务栏歌词",
+  "version": "1.1.3",
+  "author": "SimMusic",
+  "description": "将当前歌词、歌曲信息与播控组件嵌入 Windows 任务栏。",
+  "main": "main.js",
+  "permissions": ["player", "shell"]
+}

@@ -1,0 +1,26 @@
+/* 一起听页面：正中是图标与两个入口，点开后在页面中间浮出一张卡片完成操作。控件样式来自宿主的 SimUI（/.sim/simui.css），这里只安排位置。 */
+html { --SimsvMainColor: #1e9fff; --SimsvSubColor: #daefff; font-size: 16px; background: #fcfcfc; }
+body { height: 100vh; margin: 0; overflow: hidden; }
+h1, h2, p { margin: 0; font-weight: 400; }
+/* 顶部一条用于拖动主窗口，看不见；右上角留给主窗口的窗口按钮。 */
+#dragArea { position: fixed; inset: 0 0 auto; height: 35px; -webkit-app-region: drag; }
+#home { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 30px 40px; text-align: center; transition: opacity .25s, transform .25s; }
+.logo { width: 96px; height: 96px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--SimsvSubColor); color: var(--SimsvMainColor); font-size: 48px; }
+.logo i { color: inherit; }
+#home h1 { margin: 20px 0 30px; font-size: 1.5em; }
+.actions { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.actions button { width: 200px; margin: 0; }
+#sessionStatus { font-size: 1.1em; }
+#nowTitle { max-width: 420px; margin: 5px auto 25px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: .9em; opacity: .6; }
+
+/* 浮出的卡片：首页淡到后面，卡片从中间放大出现。 */
+#popupLayer { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; padding: 0 30px 40px; pointer-events: none; }
+body.popupOpen #popupLayer { pointer-events: auto; }
+body.popupOpen #home { opacity: .15; transform: scale(.96); pointer-events: none; }
+.popup { position: absolute; width: 360px; max-width: calc(100% - 60px); padding: 20px; border: 1px solid #0000000d; border-radius: 10px; background: white; box-shadow: 0 10px 30px #0000000f; opacity: 0; transform: scale(.92); pointer-events: none; transition: opacity .2s, transform .25s cubic-bezier(.34, 1.56, .64, 1); }
+.popup.shown { opacity: 1; transform: none; pointer-events: auto; }
+.popup h2 { margin-bottom: 15px; font-size: 1.2em; }
+.popup .input { margin: 0; }
+.popup .input input { flex: 1; min-width: 0; }
+.popupButtons { display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px; }
+.popupButtons button { margin: 0; }

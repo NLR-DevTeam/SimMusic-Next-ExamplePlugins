@@ -1,0 +1,10 @@
+{
+  "id": "lyricVideo",
+  "name": "LRC 2 MV",
+  "version": "1.4.2",
+  "author": "SimMusic",
+  "description": "将滚动歌词或歌曲信息作为播放页主体的 SimMusic 播放页扩展。",
+  "main": "main.js",
+  "permissions": ["playPage", "player"],
+  "playPages": [{ "id": "mv", "name": "歌词 MV", "description": "将滚动歌词或歌曲信息作为播放页主体；移动鼠标可唤出播控菜单。", "preview": "preview.svg", "url": "mv.html", "background": "#1c0a14", "dark": true, "windowButtons": true }]
+}

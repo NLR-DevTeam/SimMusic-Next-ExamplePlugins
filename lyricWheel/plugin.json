@@ -1,0 +1,24 @@
+{
+  "id": "lyricWheel",
+  "name": "歌词轮盘",
+  "version": "2.1.0",
+  "author": "SimMusic",
+  "description": "唱片样式的 SimMusic 歌词轮盘播放页扩展。",
+  "main": "main.js",
+  "permissions": [
+    "playPage",
+    "player"
+  ],
+  "playPages": [
+    {
+      "id": "wheel",
+      "name": "歌词轮盘",
+      "description": "唱片样式的 SimMusic 歌词轮盘播放页。",
+      "preview": "preview.svg",
+      "url": "wheel.html",
+      "background": "#0d1622",
+      "dark": true,
+      "windowButtons": true
+    }
+  ]
+}

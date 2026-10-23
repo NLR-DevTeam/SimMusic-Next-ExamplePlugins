@@ -1,0 +1,10 @@
+{
+  "id": "musicSync",
+  "name": "一起听",
+  "version": "1.0.0",
+  "author": "SimMusic",
+  "description": "创建分享链接，与其他 SimMusic 或浏览器里的听众共用播放队列与进度，各端都可以控制播放。",
+  "main": "main.js",
+  "permissions": ["player", "network", "shell", "sidebar", "webview", "clipboard.write"],
+  "schemes": [{ "scheme": "musicsync" }]
+}

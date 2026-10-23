@@ -1,0 +1,213 @@
+/* 歌词 MV 播放页。颜色全部来自封面：--deep 到 --bright 的横向渐变是底色，--ink 是歌词，--shade 是歌词背后的巨大虚影。 */
+@font-face { font-family: "windowsicon"; src: url("/.sim/assets/fonts/codicon.ttf"); }
+@property --deep { syntax: "<color>"; inherits: true; initial-value: #3a1226; }
+@property --mid { syntax: "<color>"; inherits: true; initial-value: #8f3357; }
+@property --bright { syntax: "<color>"; inherits: true; initial-value: #dd5a8a; }
+@property --ink { syntax: "<color>"; inherits: true; initial-value: #ffc6dc; }
+@property --shade { syntax: "<color>"; inherits: true; initial-value: #2a0b19; }
+html { transition: --deep 1.4s, --mid 1.4s, --bright 1.4s, --ink 1.4s, --shade 1.4s; background: #1c0a14; color: var(--ink); font-size: 16px; --SimsvMainColor: #ffffff; --SimsvSubColor: #ffffff33; }
+body { height: 100vh; overflow: hidden; }
+body:not(.controls) { cursor: none; }
+button { margin: 0; cursor: default; font-weight: 400; }
+b { font-weight: 400; }
+
+/* ---------- 画面 ---------- */
+#shot { position: fixed; inset: 0; }
+#camera { position: absolute; inset: -4vh -4vw; animation: drift 34s ease-in-out infinite alternate; }
+@keyframes drift { from { transform: scale(1.02) translate(-.6vw, .4vh); } to { transform: scale(1.07) translate(.8vw, -.6vh); } }
+#backdrop { position: absolute; inset: 0; background: linear-gradient(90deg, var(--deep), var(--mid) 52%, var(--bright)); }
+.glow { position: absolute; border-radius: 50%; filter: blur(60px); opacity: .55; animation: float 19s ease-in-out infinite alternate; }
+#glowA { left: -18vw; top: -10vh; width: 62vw; height: 120vh; background: radial-gradient(closest-side, var(--shade), transparent); }
+#glowB { right: -20vw; top: -14vh; width: 66vw; height: 128vh; background: radial-gradient(closest-side, var(--bright), transparent); animation-delay: -9s; animation-direction: alternate-reverse; }
+@keyframes float { from { transform: translate(-3vw, -2vh) scale(1); } to { transform: translate(4vw, 3vh) scale(1.12); } }
+/* 两侧的光环：同心的几道光圈，每一道都是从无到亮、再从亮到无的一条柔光带（内外两侧都渐变），宽窄明暗各不相同；
+   圆心处左侧是一团暗影，右侧是一团亮光。整体缓慢呼吸，另有一道光圈不断向外漾开。 */
+.rings { position: absolute; top: 50%; width: 124vh; height: 124vh; margin-top: -62vh; border-radius: 50%; animation: breathe 8s ease-in-out infinite alternate; }
+#ringsLeft { left: -56vh; background: radial-gradient(closest-side, #ffffff00 38.6%, rgba(255, 255, 255, 0.2) 41%, #ffffff00 43.4%, #ffffff00 53.9%, rgba(255, 255, 255, 0.13) 55%, #ffffff00 56.1%, #ffffff00 65.5%, rgba(255, 255, 255, 0.1) 70%, #ffffff00 74.5%, #ffffff00 84.6%, rgba(255, 255, 255, 0.09) 86%, #ffffff00 87.4%), radial-gradient(closest-side, #00000085 0, #00000047 24%, #00000000 62%); }
+#ringsRight { right: -56vh; animation-delay: -4s; background: radial-gradient(closest-side, #ffffff00 35.0%, rgba(255, 255, 255, 0.3) 38%, #ffffff00 41.0%, #ffffff00 51.7%, rgba(255, 255, 255, 0.2) 53%, #ffffff00 54.3%, #ffffff00 63.5%, rgba(255, 255, 255, 0.15) 69%, #ffffff00 74.5%, #ffffff00 85.4%, rgba(255, 255, 255, 0.12) 87%, #ffffff00 88.6%), radial-gradient(closest-side, #ffffff52 0, #ffffff26 22%, #ffffff00 60%); }
+@keyframes breathe { from { transform: scale(.95); } to { transform: scale(1.05); } }
+.rings::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(closest-side, #ffffff00 55.0%, rgba(255, 255, 255, 0.16) 60%, #ffffff00 65.0%); animation: ripple 7s ease-out infinite; }
+#ringsRight::after { animation-delay: -3.5s; }
+@keyframes ripple { from { transform: scale(.35); opacity: 0; } 25% { opacity: 1; } to { transform: scale(1.5); opacity: 0; } }
+#particles { position: absolute; inset: 0; width: 100%; height: 100%; mix-blend-mode: screen; }
+#sweep { position: absolute; inset: 0; background: linear-gradient(105deg, transparent 38%, #ffffff14 48%, #ffffff05 54%, transparent 62%); background-size: 260% 100%; background-repeat: no-repeat; animation: sweep 13s linear infinite; }
+@keyframes sweep { from { background-position: 130% 0; } to { background-position: -130% 0; } }
+#vignette { position: fixed; inset: 0; pointer-events: none; background: radial-gradient(ellipse at center, transparent 48%, #00000080 118%); }
+#grain { position: fixed; inset: -100px; pointer-events: none; opacity: .11; mix-blend-mode: overlay; animation: grain 1s steps(6) infinite; }
+@keyframes grain { 0% { transform: translate(0, 0); } 20% { transform: translate(-37px, 22px); } 40% { transform: translate(28px, -41px); } 60% { transform: translate(-14px, -9px); } 80% { transform: translate(45px, 31px); } 100% { transform: translate(-22px, 44px); } }
+.noGrain #grain, .noParticles #particles, .noGhost #ghost { display: none; }
+#progressLine { position: fixed; left: 0; bottom: 0; width: 100%; height: 3px; background: var(--ink); opacity: .55; transform-origin: left; transform: scaleX(var(--played, 0)); }
+/* 暂停或页面不在显示时，背景静止；歌词与虚影的淡入照常完成。 */
+body:not(.playing) #camera, body:not(.playing) #camera *, body:not(.playing) #camera *::before, body:not(.playing) #camera *::after, body:not(.playing) #grain { animation-play-state: paused; }
+
+/* ---------- 歌词 ---------- */
+#stage { position: absolute; inset: 4vh 4vw; display: grid; place-items: center; perspective: 1200px; }
+.serif #stage, .serif #ghost, .serif #idleTitle { font-family: "Source Han Serif SC", "Noto Serif CJK SC", "Source Han Serif CN", "Songti SC", "STZhongsong", "SimSun", serif; font-weight: 900; }
+.line { grid-area: 1 / 1; width: max-content; white-space: nowrap; font-size: var(--size); line-height: 1.22; text-align: center; color: var(--ink); text-shadow: 0 0 .18em #ffffff40, 0 .06em .5em #00000066; transform-style: preserve-3d; }
+.line.sizeS { --size: calc(min(11vw, 26vh) * var(--fit, 1)); }
+.line.sizeM { --size: calc(min(8vw, 20vh) * var(--fit, 1)); }
+.line.sizeL { --size: calc(min(5.6vw, 15vh) * var(--fit, 1)); }
+.line.sizeX { --size: calc(min(4.2vw, 12vh) * var(--fit, 1)); }
+/* 队列展开时，歌词、虚影与片头让出右侧，字号按剩下的宽度收小。 */
+#stage, #ghost, #idleCard { transition: right .45s cubic-bezier(.16, 1, .3, 1); }
+.queue { --fit: .74; }
+.queue #stage { right: calc(4vw + 392px); }
+.queue #ghost, .queue #idleCard { right: 392px; }
+.queue #ghost { font-size: calc(min(26vw, 56vh) * .74); }
+.queue #idleText { max-width: calc(46vw - 240px); }
+body:not(.serif):not(.customFont) #stage, body:not(.serif):not(.customFont) #ghost, body:not(.serif):not(.customFont) #idleTitle { font-weight: 700; }
+.customFont #stage, .customFont #ghost, .customFont #idleTitle { font-family: var(--lyricFont), var(--appFont, "Microsoft YaHei"), "Microsoft YaHei", sans-serif; }
+/* 系统自带的宋体只有细的一种字重：没有装粗宋体时，用描边把笔画加粗到接近。 */
+.serif .line, .serif #ghost, .serif #idleTitle { -webkit-text-stroke: .026em currentColor; }
+.serif .line .tr { -webkit-text-stroke: 0; }
+.line > .row { display: block; }
+.line .tr { display: block; width: 0; min-width: 100%; white-space: normal; margin-top: .9em; font-size: max(.26em, 18px); font-weight: 400; letter-spacing: .12em; font-family: var(--appFont, "Microsoft YaHei"), "Microsoft YaHei", sans-serif; }
+.line .tr { opacity: .78; }
+.line.entering .tr { animation: charIn .5s .3s both; }
+
+/* 版式：居中、上小下大两行、竖排。都放在画面正中，不倾斜。 */
+.c { display: inline-block; white-space: pre; font-weight: inherit; }
+.sceneStack > .row:first-child { font-size: .58em; letter-spacing: .08em; opacity: .9; }
+.sceneVertical { writing-mode: vertical-rl; width: auto; height: max-content; --size: calc(min(9vh, 7vw) * var(--fit, 1)); line-height: 1.45; letter-spacing: .08em; }
+.sceneVertical .tr { width: auto; min-width: 0; height: 0; min-height: 100%; margin-top: 0; margin-right: 1.1em; }
+/* 换句：上一句先淡出，这一句再逐字淡入，每个字只比前一个晚一点点。只动不透明度和位移，不卡顿。 */
+.line { will-change: opacity; }
+.line.leaving { animation: leave .22s ease-in forwards; }
+@keyframes leave { to { opacity: 0; } }
+.line.entering .c { animation: charIn .34s cubic-bezier(.2, .7, .3, 1) both; }
+@keyframes charIn { from { opacity: 0; transform: translateY(.18em); } }
+.sceneVertical.entering .c { animation-name: charInVertical; }
+@keyframes charInVertical { from { opacity: 0; transform: translateX(.18em); } }
+.line.entering .c:nth-child(1) { animation-delay: 0.000s; }
+.line.entering .c:nth-child(2) { animation-delay: 0.026s; }
+.line.entering .c:nth-child(3) { animation-delay: 0.052s; }
+.line.entering .c:nth-child(4) { animation-delay: 0.078s; }
+.line.entering .c:nth-child(5) { animation-delay: 0.104s; }
+.line.entering .c:nth-child(6) { animation-delay: 0.130s; }
+.line.entering .c:nth-child(7) { animation-delay: 0.156s; }
+.line.entering .c:nth-child(8) { animation-delay: 0.182s; }
+.line.entering .c:nth-child(9) { animation-delay: 0.208s; }
+.line.entering .c:nth-child(10) { animation-delay: 0.234s; }
+.line.entering .c:nth-child(11) { animation-delay: 0.260s; }
+.line.entering .c:nth-child(12) { animation-delay: 0.286s; }
+.line.entering .c:nth-child(13) { animation-delay: 0.312s; }
+.line.entering .c:nth-child(14) { animation-delay: 0.338s; }
+.line.entering .c:nth-child(15) { animation-delay: 0.364s; }
+.line.entering .c:nth-child(16) { animation-delay: 0.390s; }
+.line.entering .c:nth-child(17) { animation-delay: 0.416s; }
+.line.entering .c:nth-child(18) { animation-delay: 0.442s; }
+.line.entering .c:nth-child(19) { animation-delay: 0.468s; }
+.line.entering .c:nth-child(20) { animation-delay: 0.494s; }
+.line.entering .c:nth-child(21) { animation-delay: 0.520s; }
+.line.entering .c:nth-child(22) { animation-delay: 0.546s; }
+.line.entering .c:nth-child(23) { animation-delay: 0.572s; }
+.line.entering .c:nth-child(24) { animation-delay: 0.598s; }
+.line.entering .c:nth-child(25) { animation-delay: 0.624s; }
+.line.entering .c:nth-child(26) { animation-delay: 0.650s; }
+.line.entering .c:nth-child(27) { animation-delay: 0.676s; }
+.line.entering .c:nth-child(28) { animation-delay: 0.702s; }
+.line.entering .c:nth-child(29) { animation-delay: 0.728s; }
+.line.entering .c:nth-child(30) { animation-delay: 0.754s; }
+.line.entering .c:nth-child(31) { animation-delay: 0.780s; }
+.line.entering .c:nth-child(32) { animation-delay: 0.806s; }
+.line.entering .c:nth-child(33) { animation-delay: 0.832s; }
+.line.entering .c:nth-child(34) { animation-delay: 0.858s; }
+.line.entering .c:nth-child(35) { animation-delay: 0.884s; }
+.line.entering .c:nth-child(36) { animation-delay: 0.910s; }
+.line.entering .c:nth-child(37) { animation-delay: 0.936s; }
+.line.entering .c:nth-child(38) { animation-delay: 0.962s; }
+.line.entering .c:nth-child(39) { animation-delay: 0.988s; }
+.line.entering .c:nth-child(40) { animation-delay: 1.014s; }
+.line.entering .c:nth-child(n + 41) { animation-delay: 1.04s; }
+.line.entering > .row:last-child .c { animation-duration: .4s; }
+/* 逐字歌词：整句一起淡入，不再逐字出现；没唱到的片段半透明，唱过的完全显示，正在唱的片段按进度显现。 */
+.line.byWord.entering { animation: lineIn .3s ease-out both; }
+@keyframes lineIn { from { opacity: 0; } }
+.line.byWord.entering .c { animation: none; }
+.line.byWord .c { opacity: .5; transition: opacity .2s; }
+.line.byWord .c.sung { opacity: 1; }
+.line.byWord .c.singing { opacity: 1; transition: none; -webkit-mask-image: linear-gradient(90deg, #000 var(--wordProgress, 0%), #00000080 var(--wordProgress, 0%)); }
+.line.byWord.sceneVertical .c.singing { -webkit-mask-image: linear-gradient(180deg, #000 var(--wordProgress, 0%), #00000080 var(--wordProgress, 0%)); }
+/* 背后的虚影：这一句里的一个词组放得极大，压暗、虚化，淡淡地衬在后面；换句时重新浮现。 */
+#ghost { position: absolute; inset: 0; display: grid; place-items: center; font-size: min(26vw, 56vh); line-height: 1; white-space: nowrap; color: var(--shade); opacity: .3; filter: blur(.035em); letter-spacing: -.04em; pointer-events: none; }
+#ghost.beat { animation: ghost 1.2s ease-out; }
+@keyframes ghost { from { opacity: 0; transform: scale(1.06); } }
+.idle #ghost { opacity: 0; transition: opacity .8s; }
+
+/* ---------- 间奏与片头：封面唱片、歌名 ---------- */
+#idleCard { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 5vw; opacity: 0; transform: scale(.94); filter: blur(12px); transition: opacity .8s, transform .9s cubic-bezier(.16, 1, .3, 1), filter .8s; pointer-events: none; }
+.idle #idleCard { opacity: 1; transform: none; filter: none; }
+#disc { flex: none; width: 34vh; height: 34vh; border-radius: 50%; padding: 5.2vh; background: repeating-radial-gradient(circle, #0b0b0d 0 .5vh, #17171b .5vh .62vh); box-shadow: 0 2vh 6vh #00000080, 0 0 0 .5vh #ffffff14; animation: spin 14s linear infinite; }
+#disc > img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+@keyframes spin { to { transform: rotate(360deg); } }
+#idleText { max-width: 46vw; }
+#idleTitle { display: block; font-size: calc(min(6vw, 13vh) * var(--titleFit, 1)); line-height: 1.15; text-shadow: 0 .06em .5em #00000066; overflow-wrap: anywhere; }
+#idleArtist { display: block; margin-top: 1.4vh; font-size: max(1.5vw, 18px); letter-spacing: .2em; opacity: .75; }
+#bars { display: flex; align-items: flex-end; gap: .5vw; height: 5vh; margin-top: 3vh; }
+#bars > i { width: .5vw; height: 100%; background: var(--ink); opacity: .7; border-radius: 1vw; transform-origin: bottom; animation: bar 1.1s ease-in-out infinite alternate; }
+#bars > i:nth-child(2) { animation-duration: .8s; animation-delay: -.3s; }
+#bars > i:nth-child(3) { animation-duration: 1.3s; animation-delay: -.7s; }
+#bars > i:nth-child(4) { animation-duration: .7s; animation-delay: -.2s; }
+#bars > i:nth-child(5) { animation-duration: 1s; animation-delay: -.5s; }
+@keyframes bar { from { transform: scaleY(.18); } to { transform: scaleY(1); } }
+
+/* ---------- 控件：移动鼠标时出现 ---------- */
+#topBar, #controlBar, #queueDrawer { opacity: 0; pointer-events: none; transition: opacity .35s, transform .45s cubic-bezier(.16, 1, .3, 1); }
+.controls #topBar, .controls #controlBar { opacity: 1; pointer-events: auto; transform: none; }
+#topBar { position: fixed; inset: 0 0 auto; height: 44px; display: flex; align-items: flex-start; transform: translateY(-12px); background: linear-gradient(#00000073, transparent); color: #ffffffe6; -webkit-app-region: drag; }
+#topTitle { flex: 1; min-width: 0; padding: 0 12px; line-height: 35px; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: .85; }
+.windowButtons { display: flex; }
+.barButton { width: 46px; height: 35px; display: flex; align-items: center; justify-content: center; padding: 0 0 1px; background: transparent; color: inherit; border-radius: 0; transition: background .2s, color .2s; -webkit-app-region: no-drag; }
+.windowsIcon { font-family: "windowsicon"; }
+.barButton:hover { background: #ffffff24; filter: none; }
+.barButton:active { background: #ffffff3d; filter: none; }
+.barButton.closeButton:hover { background: #e81123; color: white; }
+#controlBar { position: fixed; left: 50%; bottom: 28px; width: min(880px, calc(100vw - 48px)); margin-left: max(-440px, calc(24px - 50vw)); padding: 14px 22px 12px; border-radius: 16px; background: #14101680; backdrop-filter: blur(26px) saturate(1.4); box-shadow: 0 12px 40px #00000066, inset 0 0 0 1px #ffffff1f; color: #fffffff0; transform: translateY(18px); }
+.seekRow { display: flex; align-items: center; gap: 12px; font-size: 12px; font-variant-numeric: tabular-nums; }
+.seekRow > span { width: 44px; opacity: .8; }
+.seekRow > span:last-child { text-align: right; }
+.seekRow > .progress { flex: 1; }
+#controlBar .progress .outerBar { background: #ffffff2e; }
+.buttonRow { display: flex; align-items: center; margin-top: 8px; }
+.nowPlaying, .side { flex: 1; min-width: 0; display: flex; align-items: center; }
+.nowPlaying > img { flex: none; width: 44px; height: 44px; border-radius: 8px; object-fit: cover; margin-right: 12px; }
+.nowPlaying > div { min-width: 0; }
+.nowPlaying b, .nowPlaying span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nowPlaying b { font-size: 15px; }
+.nowPlaying span { font-size: 12px; opacity: .7; margin-top: 2px; }
+.side { justify-content: flex-end; }
+.side > .progress { width: 96px; margin: 0 10px 0 4px; }
+.transport { display: flex; align-items: center; gap: 6px; }
+.roundButton { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; padding: 0; border-radius: 50%; background: transparent; color: inherit; font-size: 20px; opacity: .78; transition: background .2s, opacity .2s, transform .2s; }
+.roundButton:hover { background: #ffffff24; opacity: 1; filter: none; }
+.roundButton:active { transform: scale(.94); filter: none; }
+.roundButton.play { width: 52px; height: 52px; margin: 0 12px; font-size: 28px; opacity: 1; background: #ffffff26; }
+.roundButton.active { background: #ffffff33; opacity: 1; }
+.roundButton > svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.roundButton .leave, .fullscreen .roundButton .enter { display: none; }
+.fullscreen .roundButton .leave { display: inline; }
+/* 播放队列：从右侧滑入。 */
+#queueDrawer { position: fixed; top: 56px; right: 24px; bottom: 152px; width: min(360px, calc(100vw - 48px)); border-radius: 16px; background: #14101680; backdrop-filter: blur(26px) saturate(1.4); box-shadow: 0 12px 40px #00000066, inset 0 0 0 1px #ffffff1f; color: #fffffff0; transform: translateX(28px); overflow: hidden; }
+.queue #queueDrawer { opacity: 1; pointer-events: auto; transform: none; }
+#queueList { height: 100%; overflow-y: auto; padding: 8px; }
+.queueRow { display: flex; align-items: center; margin-bottom: 2px; padding: 8px; border-radius: 10px; transition: background .2s; }
+.queueRow:hover { background: #ffffff1c; }
+.queueRow.current { background: #ffffff2b; }
+.queueRow > img { flex: none; width: 40px; height: 40px; border-radius: 6px; object-fit: cover; margin-right: 10px; }
+.queueRow > div { flex: 1; min-width: 0; }
+.removeButton { flex: none; width: 30px; height: 30px; padding: 0; border-radius: 50%; background: transparent; color: inherit; font-size: 16px; opacity: 0; transition: background .2s, opacity .2s; }
+.queueRow:hover > .removeButton { opacity: .6; }
+.removeButton:hover { background: #ffffff24; opacity: 1 !important; filter: none; }
+.queueRow.current > .removeButton { visibility: hidden; }
+.dragGhost { position: fixed; z-index: 160; margin: 0; pointer-events: none; background: #2a2630f2; color: #fffffff0; box-shadow: 0 8px 24px #00000066; }
+.dragSource { opacity: 0; }
+.dragSorting .queueRow { transition: transform .15s; }
+.dragUp { transform: translateY(calc(-1 * var(--dragStep))); }
+.dragDown { transform: translateY(var(--dragStep)); }
+.queueRow b, .queueRow span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.queueRow b { font-size: 14px; }
+.queueRow span { font-size: 12px; opacity: .65; margin-top: 2px; }
+#camera #ghost, #camera .line, #camera .line * { animation-play-state: running; }
+/* 页面收起或窗口不可见时，连同光圈伪元素与歌词的一次性动画一起暂停。 */
+body:not(.rendering) #camera, body:not(.rendering) #camera *, body:not(.rendering) #camera *::before, body:not(.rendering) #camera *::after, body:not(.rendering) #grain,
+body:not(.rendering) #camera #ghost, body:not(.rendering) #camera .line, body:not(.rendering) #camera .line * { animation-play-state: paused; }

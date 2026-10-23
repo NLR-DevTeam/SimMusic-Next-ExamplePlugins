@@ -1,0 +1,121 @@
+/* 歌词转盘：一张大唱片从左边缘露出大半，外圈是频谱；歌词沿着与唱片同心的圆弧排列，像拨轮一样上下转动，
+   字始终是水平的。颜色取自封面，由 wheel.js 写入这三个变量。 */
+@font-face { font-family: "windowsicon"; src: url("/.sim/assets/fonts/codicon.ttf"); }
+@property --deep { syntax: "<color>"; inherits: true; initial-value: #14101c; }
+@property --mid { syntax: "<color>"; inherits: true; initial-value: #3a2a5c; }
+@property --ink { syntax: "<color>"; inherits: true; initial-value: #efe9ff; }
+@property --hubX { syntax: "<length>"; inherits: true; initial-value: 0px; }
+
+/* 几何：唱片直径、圆心的横向位置、唱片外圈留给频谱的宽度、歌词所在圆弧的半径。
+   唱片连同歌词作为一组在窗口里水平居中：从唱片左缘到歌词右端（按一句歌词约占 32vw 估计）两侧留白相当；
+   窗口很窄时唱片至少完整露出。 */
+html { --disc: min(66vh, 38vw); --hubX: max(calc(var(--disc) / 2 + 3vw), calc(33vw - var(--gap) / 2)); --gap: max(5vh, 40px); --radius: calc(var(--disc) / 2 + var(--gap) + 2vw);
+    transition: --deep 1.2s, --mid 1.2s, --ink 1.2s; background: var(--deep); color: var(--ink); font-size: 16px; --SimsvMainColor: var(--ink); --SimsvSubColor: #ffffff33; }
+/* 收起歌词时只剩唱片和歌名：这一组整体移到窗口中间。 */
+body { height: 100vh; overflow: hidden; transition: --hubX .6s cubic-bezier(.2, .8, .2, 1); }
+body.lyricsHidden { --hubX: max(calc(var(--disc) / 2 + 3vw), calc(50vw - var(--radius) * .42)); }
+button { margin: 0; cursor: default; font-weight: 400; }
+
+#backdropCover { position: fixed; inset: -12vh -12vw; width: 124vw; height: 124vh; object-fit: cover; filter: blur(80px) saturate(1.4); opacity: .55; }
+#backdrop { position: fixed; inset: 0; background: radial-gradient(circle at var(--hubX) 47%, var(--mid), transparent 60%), radial-gradient(ellipse at 82% 42%, var(--mid), transparent 55%), var(--deep); opacity: .8; }
+
+/* ---------- 标题栏 ---------- */
+#topBar { position: fixed; inset: 0 0 auto; height: 35px; display: flex; color: #ffffffe6; -webkit-app-region: drag; z-index: 2; }
+#topSpace { flex: 1; }
+.windowsIcon { font-family: "windowsicon"; }
+.barButton { width: 46px; height: 35px; display: flex; align-items: center; justify-content: center; padding: 0 0 1px; background: transparent; color: inherit; border-radius: 0; transition: background .2s, color .2s; -webkit-app-region: no-drag; }
+.barButton:hover { background: #ffffff24; filter: none; }
+.barButton:active { background: #ffffff3d; filter: none; }
+.barButton.closeButton:hover { background: #e81123; color: white; }
+
+/* ---------- 唱片与频谱 ---------- */
+#stage { position: fixed; inset: 35px 0 120px; }
+#hub { position: absolute; left: var(--hubX); top: 50%; width: 0; height: 0; }
+/* 画布比频谱的地方再宽出四分之一：最高的线也不会被切掉。 */
+#spectrum { position: absolute; left: calc(var(--disc) / -2 - var(--gap) * 1.25); top: calc(var(--disc) / -2 - var(--gap) * 1.25); width: calc(var(--disc) + var(--gap) * 2.5); height: calc(var(--disc) + var(--gap) * 2.5); pointer-events: none; }
+#disc { position: absolute; left: calc(var(--disc) / -2); top: calc(var(--disc) / -2); width: var(--disc); height: var(--disc); padding: 0; border-radius: 50%; background: transparent; box-shadow: 0 3vh 9vh #0000008c; transition: transform .4s cubic-bezier(.2, .8, .2, 1); }
+#disc:hover { filter: none; transform: scale(1.008); }
+#disc:active { filter: none; transform: scale(.995); }
+#discSpin { position: absolute; inset: 0; border-radius: 50%; background: repeating-radial-gradient(circle, #0e0e10 0 .9%, #18181c .9% 1.2%); box-shadow: inset 0 0 0 1px #ffffff14; animation: spin 40s linear infinite; }
+body:not(.playing) #discSpin, body:not(.shown) #discSpin { animation-play-state: paused; }
+#discCover { position: absolute; inset: 16.8%; width: 66.4%; height: 66.4%; object-fit: cover; border-radius: 50%; box-shadow: 0 0 0 calc(var(--disc) * .01) #000000a6; }
+/* 盘面上不随唱片转动的两道反光。 */
+#discShine { position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(from 25deg, #ffffff00 0 6%, #ffffff14 12%, #ffffff00 19% 56%, #ffffff0f 62%, #ffffff00 69%); pointer-events: none; }
+/* 圆心的播放键：暂停时一直显示，播放时只在指针移上去时显示。 */
+#discIcon { position: absolute; left: 50%; top: 50%; width: 16%; height: 16%; margin: -8% 0 0 -8%; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #0000006b; color: #ffffff; font-size: calc(var(--disc) * .075); backdrop-filter: blur(8px); transition: opacity .25s; }
+.playing #disc:not(:hover) #discIcon { opacity: 0; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---------- 歌名与歌词 ---------- */
+/* 歌名和艺术家在歌词圆弧的上方，顺着圆弧再往左一点。 */
+#trackInfo { position: absolute; left: 0; top: 0; width: calc(100vw - var(--hubX) - var(--radius) * .84 - 5vw); transform: translate(calc(var(--radius) * .84), calc(var(--radius) * -.6)); translate: 0 -100%; }
+#trackTitle { font-size: clamp(18px, min(3.4vh, 1.8vw), 34px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#trackArtist { margin-top: 4px; font-size: clamp(13px, min(1.8vh, 1vw), 18px); opacity: .6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* 一屏五行。每一行的左侧中点落在圆弧上，按它离居中那一句有几行，沿圆弧转过 11° 的倍数；更远的停在 30° 处、不显示。
+   位置由行的 data-offset 决定，三角函数值事先算好（Chromium 106 的 CSS 还没有 sin / cos）。 */
+#wheel { position: absolute; left: 0; top: 0; transition: opacity .4s; }
+.queueOpen #wheel, .lyricsHidden #wheel { opacity: 0; pointer-events: none; }
+.wheelLine { position: absolute; left: 0; top: 0; width: calc(100vw - var(--hubX) - var(--radius) * var(--cos) - 5vw); translate: 0 calc(-50% + var(--drop)); transform-origin: 0 50%; transform: translate(calc(var(--radius) * var(--cos)), calc(var(--radius) * var(--sin))) scale(var(--zoom)); opacity: var(--show); font-size: calc(clamp(22px, min(5vh, 2.6vw), 52px) * var(--fit, 1)); line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: transform .6s cubic-bezier(.2, .8, .2, 1), translate .6s cubic-bezier(.2, .8, .2, 1), width .6s cubic-bezier(.2, .8, .2, 1), opacity .6s; --cos: 1; --sin: 0; --drop: 0px; --zoom: 1; --show: 1; }
+.wheelLine[data-offset="-1"] { --cos: .9816; --sin: -.1908; --zoom: .8; --show: .42; }
+.wheelLine[data-offset="1"] { --cos: .9816; --sin: .1908; --zoom: .8; --show: .42; }
+.wheelLine[data-offset="-2"] { --cos: .9272; --sin: -.3746; --zoom: .68; --show: .2; }
+.wheelLine[data-offset="2"] { --cos: .9272; --sin: .3746; --zoom: .68; --show: .2; }
+.wheelLine[data-offset="-3"] { --cos: .866; --sin: -.5; --zoom: .58; --show: 0; pointer-events: none; }
+.wheelLine[data-offset="3"] { --cos: .866; --sin: .5; --zoom: .58; --show: 0; pointer-events: none; }
+.wheelLine.seekable:not([data-offset="0"]):hover { opacity: .7; }
+.wheelLine > .translation { display: block; overflow: hidden; text-overflow: ellipsis; font-size: .62em; line-height: 1.4; opacity: .7; }
+.wheelLine:not([data-offset="0"]) > .translation { display: none; }
+/* 居中的一句带翻译时：原文仍然在圆弧上，翻译挂在下面，下方各行让出翻译的高度再加一点间距。 */
+#wheel.translated .wheelLine[data-offset="0"] { --drop: .434em; }
+#wheel.translated .wheelLine:is([data-offset="1"], [data-offset="2"], [data-offset="3"]) { --drop: 1.15em; }
+/* 正在唱的这一句：滚轮翻看别的句子时，它仍然比同位置的其他行亮。 */
+.wheelLine.sung:not([data-offset="0"]) { opacity: calc(var(--show) * 1.8); }
+/* 逐字歌词：唱过的片段完全显示，没唱到的半透明，正在唱的片段从左到右显现。 */
+.word { display: inline-block; white-space: pre; }
+.wheelLine.sung .word { opacity: .4; transition: opacity .2s; }
+.wheelLine.sung .word.done { opacity: 1; }
+.wheelLine.sung .word.doing { opacity: 1; transition: none; -webkit-mask-image: linear-gradient(90deg, #000 var(--wordProgress, 0%), #00000066 var(--wordProgress, 0%)); }
+
+/* ---------- 播放队列：在歌词的位置展开，与歌名左对齐；点一行播放、× 移出、拖动排序、右键是这首歌的菜单 ---------- */
+#queueDrawer { position: absolute; left: calc(var(--radius) * .84); top: calc(var(--radius) * -.6 + 14px); width: calc(100vw - var(--hubX) - var(--radius) * .84 - 5vw); height: calc(var(--radius) * .6 + 50vh - 100px); border-radius: 16px; background: #ffffff0f; backdrop-filter: blur(24px) saturate(1.3); box-shadow: inset 0 0 0 1px #ffffff1a; overflow: hidden; opacity: 0; pointer-events: none; transform: translateY(14px); transition: opacity .35s, transform .45s cubic-bezier(.16, 1, .3, 1); }
+.queueOpen #queueDrawer { opacity: 1; pointer-events: auto; transform: none; }
+#queueList { height: 100%; overflow-y: auto; padding: 8px; }
+.queueRow { display: flex; align-items: center; margin-bottom: 2px; padding: 8px; border-radius: 10px; transition: background .2s; }
+.queueRow:hover { background: #ffffff17; }
+.queueRow.current { background: #ffffff26; }
+.queueRow > img { flex: none; width: 42px; height: 42px; border-radius: 6px; object-fit: cover; margin-right: 12px; }
+.queueRow > div { flex: 1; min-width: 0; }
+.queueRow b, .queueRow span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 400; }
+.queueRow b { font-size: 15px; }
+.queueRow span { font-size: 12px; opacity: .6; margin-top: 3px; }
+.removeButton { flex: none; width: 30px; height: 30px; padding: 0; border-radius: 50%; background: transparent; color: inherit; font-size: 16px; opacity: 0; transition: background .2s, opacity .2s; }
+.queueRow:hover > .removeButton { opacity: .6; }
+.removeButton:hover { background: #ffffff24; opacity: 1 !important; filter: none; }
+.queueRow.current > .removeButton { visibility: hidden; }
+.emptyQueue { padding: 40px 0; text-align: center; opacity: .5; }
+.dragGhost { position: fixed; z-index: 3; margin: 0; pointer-events: none; background: var(--mid); color: var(--ink); box-shadow: 0 8px 24px #00000066; }
+.dragSource { opacity: 0; }
+.dragSorting .queueRow { transition: transform .15s; }
+.dragUp { transform: translateY(calc(-1 * var(--dragStep))); }
+.dragDown { transform: translateY(var(--dragStep)); }
+
+/* ---------- 进度条与控件 ---------- */
+#controlBar { position: fixed; inset: auto 0 0; padding: 26px 5vw 18px; background: linear-gradient(transparent, #00000059); color: #fffffff0; }
+.seekRow { display: flex; align-items: center; gap: 14px; font-size: 12px; opacity: .85; font-variant-numeric: tabular-nums; }
+.seekRow > .progress { flex: 1; }
+#controlBar .progress .outerBar { background: #ffffff2e; }
+.buttonRow { display: flex; align-items: center; margin-top: 10px; }
+.side { flex: 1; display: flex; align-items: center; gap: 6px; }
+.side.end { justify-content: flex-end; }
+.side > .progress { width: 96px; margin: 0 12px 0 2px; }
+.transport { display: flex; align-items: center; gap: 18px; }
+.roundButton { flex: none; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; padding: 0; border-radius: 50%; background: transparent; color: inherit; font-size: 20px; opacity: .75; transition: background .2s, opacity .2s, transform .2s; }
+.roundButton:hover { background: #ffffff1f; opacity: 1; filter: none; }
+.roundButton:active { transform: scale(.94); filter: none; }
+.roundButton.active { background: #ffffff26; opacity: 1; }
+.roundButton.play { width: 56px; height: 56px; font-size: 28px; opacity: 1; background: var(--ink); color: var(--deep); }
+.roundButton.play:hover { background: var(--ink); transform: scale(1.04); }
+.roundButton > svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.roundButton .leave, .fullscreen .roundButton .enter { display: none; }
+.fullscreen .roundButton .leave { display: inline; }

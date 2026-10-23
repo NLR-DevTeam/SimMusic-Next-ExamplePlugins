@@ -1,0 +1,12 @@
+{
+  "id": "ncmNext",
+  "name": "网易云 Nodejs API",
+  "version": "2.4.0",
+  "author": "SimMusic",
+  "description": "接入第三方搭建的网易云 Nodejs API 为 SimMusic 提供音源功能。",
+  "main": "main.js",
+  "permissions": ["network", "sidebar", "trackMenu", "shell", "clipboard.write", "webview", "player"],
+  "capabilities": {"download": true},
+  "schemes": [{"scheme": "ncm", "download": true}],
+  "trackMenus": [{"key":"collect","label":"收藏…","icon":"ED6E","dynamic":true},{"key":"quality","label":"播放音质","icon":"EF83","scenes":["play"],"selection":"single","dynamic":true},{"key":"copyId","label":"复制单曲 ID","scenes":["list","play","queue"],"selection":"single","permissions":["clipboard.write"]},{"key": "openWeb", "label": "在浏览器中查看", "scenes": ["list", "play", "queue"], "selection": "single", "permissions": ["shell"]}]
+}
